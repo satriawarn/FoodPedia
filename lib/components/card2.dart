@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:foodpedia/foodpedia_theme.dart';
 
+import '../models/models.dart';
 import 'author_card.dart';
 
 class Card2 extends StatelessWidget {
-  const Card2({Key? key}) : super(key: key);
+  final ExploreRecipe recipe;
+
+  const Card2({
+    Key? key,
+    required this.recipe,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +22,7 @@ class Card2 extends StatelessWidget {
         ),
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/mag5.png'),
+            image: AssetImage('assets/profile_pics/author.jpg'),
             fit: BoxFit.cover,
           ),
           borderRadius: BorderRadius.all(
@@ -25,21 +31,19 @@ class Card2 extends StatelessWidget {
         ),
         child: Column(
           children: [
-            // TODO 1: add author information
-            const AuthorCard(
-              authorName: 'Erik Satriawan',
-              title: 'Smoothie Connoisseur',
-              imageProvider: AssetImage('assets/author.jpg'),
+            AuthorCard(
+              authorName: recipe.authorName,
+              title: recipe.role,
+              imageProvider: AssetImage(recipe.profileImage),
             ),
             Expanded(
               child: Stack(
                 children: [
-                  // 3
                   Positioned(
                     bottom: 16,
                     right: 16,
                     child: Text(
-                      'Recipe',
+                      recipe.title,
                       style: FoodPediaTheme.lightTextTheme.headline1,
                     ),
                   ),
@@ -49,7 +53,7 @@ class Card2 extends StatelessWidget {
                     child: RotatedBox(
                       quarterTurns: 3,
                       child: Text(
-                        'Smoothies',
+                        recipe.subtitle,
                         style: FoodPediaTheme.lightTextTheme.headline1,
                       ),
                     ),

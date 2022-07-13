@@ -12,7 +12,7 @@ class FoodPedia extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = FoodPediaTheme.dark();
+    final theme = FoodPediaTheme.light();
     return MaterialApp(
       theme: theme,
       title: 'FoodPedia',

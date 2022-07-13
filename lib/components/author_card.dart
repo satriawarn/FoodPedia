@@ -3,6 +3,7 @@ import 'package:foodpedia/foodpedia_theme.dart';
 
 import 'circle_image.dart';
 
+
 class AuthorCard extends StatefulWidget {
   final String authorName;
   final String title;
