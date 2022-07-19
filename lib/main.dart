@@ -7,6 +7,7 @@ import 'models/app_state_manager.dart';
 import 'models/grocery_manager.dart';
 import 'models/tab_manager.dart';
 import 'navigation/app_router.dart';
+import 'navigation/app_router_parser.dart';
 
 void main() {
   runApp(const FoodPedia());
@@ -23,6 +24,7 @@ class _FoodPediaState extends State<FoodPedia> {
   final _groceryManager = GroceryManager();
   final _profileManager = ProfileManager();
   final _appStateManager = AppStateManager();
+  final routeParser = AppRouteParser();
   late AppRouter _appRouter;
 
   @override
@@ -64,6 +66,7 @@ class _FoodPediaState extends State<FoodPedia> {
             home: Router(
               routerDelegate: _appRouter,
               backButtonDispatcher: RootBackButtonDispatcher(),
+              routeInformationParser: routeParser,
             ),
           );
         },

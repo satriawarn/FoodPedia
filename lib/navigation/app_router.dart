@@ -4,8 +4,9 @@ import '../models/foodpedia_pages.dart';
 import '../models/models.dart';
 import '../models/profile_manager.dart';
 import '../screens/screens.dart';
+import 'app_link.dart';
 
-class AppRouter extends RouterDelegate
+class AppRouter extends RouterDelegate<AppLink>
     with ChangeNotifier, PopNavigatorRouterDelegateMixin {
   @override
   final GlobalKey<NavigatorState> navigatorKey;
@@ -51,19 +52,17 @@ class AppRouter extends RouterDelegate
           }, onUpdate: (item, index) {
             // No update
           }),
-        // // 1
-        // if (groceryManager.selectedIndex != -1)
-        // // 2
-        //   GroceryItemScreen.page(
-        //       item: groceryManager.selectedGroceryItem,
-        //       index: groceryManager.selectedIndex,
-        //       onUpdate: (item, index) {
-        //         // 3
-        //         groceryManager.updateItem(item, index);
-        //       },
-        //       onCreate: (_) {
-        //         // No create
-        //       }),
+        if (groceryManager.selectedIndex != -1)
+          GroceryItemScreen.page(
+              item: groceryManager.selectedGroceryItem,
+              index: groceryManager.selectedIndex,
+              onUpdate: (item, index) {
+                // 3
+                groceryManager.updateItem(item, index);
+              },
+              onCreate: (_) {
+                // No create
+              }),
         if (profileManager.didSelectUser)
           ProfileScreen.page(profileManager.getUser),
         if (profileManager.didTapUrl) WebViewScreen.page()
@@ -71,17 +70,11 @@ class AppRouter extends RouterDelegate
     );
   }
 
-  bool _handlePopPage(// 1
-      Route<dynamic> route,
-      // 2
-      result) {
-    // 3
+  bool _handlePopPage(Route<dynamic> route, result) {
     if (!route.didPop(result)) {
-      // 4
       return false;
     }
 
-    // 5
     if (route.settings.name == FoodPediaPages.onboardingPath) {
       appStateManager.logout();
     }
@@ -99,7 +92,54 @@ class AppRouter extends RouterDelegate
     return true;
   }
 
-  // 9
   @override
-  Future<void> setNewRoutePath(configuration) async => null;
+  AppLink get currentConfiguration => getCurrentPath();
+
+  AppLink getCurrentPath() {
+    if (!appStateManager.isLoggedIn) {
+      return AppLink(location: AppLink.loginPath);
+    } else if (!appStateManager.isOnboardingComplete) {
+      return AppLink(location: AppLink.onBoardingPath);
+    } else if (profileManager.didSelectUser) {
+      return AppLink(location: AppLink.profilePath);
+    } else if (groceryManager.isCreatingNewItem) {
+      return AppLink(location: AppLink.itemPath);
+    } else if (groceryManager.selectedGroceryItem != null) {
+      final id = groceryManager.selectedGroceryItem?.id;
+      return AppLink(
+        location: AppLink.itemPath,
+        itemId: id,
+      );
+    } else {
+      return AppLink(
+        location: AppLink.homePath,
+        currentTab: appStateManager.getSelectedTab,
+      );
+    }
+  }
+
+  @override
+  Future<void> setNewRoutePath(AppLink newLink) async {
+    switch (newLink.location) {
+      case AppLink.profilePath:
+        profileManager.tapOnProfile(true);
+        break;
+      case AppLink.itemPath:
+        final itemId = newLink.itemId;
+        if (itemId != null) {
+          groceryManager.setSelectedGroceryItem(itemId);
+        } else {
+          groceryManager.createNewItem();
+        }
+        profileManager.tapOnProfile(false);
+        break;
+      case AppLink.homePath:
+        appStateManager.goToTab(newLink.currentTab ?? 0);
+        profileManager.tapOnProfile(false);
+        groceryManager.groceryItemTapped(-1);
+        break;
+      default:
+        break;
+    }
+  }
 }
