@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:foodpedia/models/models.dart';
 import 'package:provider/provider.dart';
 
 import '../models/tab_manager.dart';
@@ -37,7 +38,7 @@ class EmptyGroceryScreen extends StatelessWidget {
               ),
               color: Colors.green,
               onPressed: (){
-                Provider.of<TabManager>(context, listen: false).goToRecipes();
+                Provider.of<AppStateManager>(context, listen: false).goToRecipes();
               },
               child: const Text('Browse Recipes'),
             )

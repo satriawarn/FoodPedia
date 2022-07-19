@@ -13,7 +13,7 @@ class GroceryListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final groceryItems = manager.groceryItem;
+    final groceryItems = manager.groceryItems;
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: ListView.separated(
@@ -49,19 +49,7 @@ class GroceryListScreen extends StatelessWidget {
                 },
               ),
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => GroceryItemScreen(
-                      originalItem: item,
-                      onCreate: (_) {},
-                      onUpdate: (item) {
-                        manager.updateItem(item, index);
-                        Navigator.pop(context);
-                      },
-                    ),
-                  ),
-                );
+                manager.groceryItemTapped(index);
               },
             ),
           );

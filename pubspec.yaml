@@ -43,6 +43,8 @@ dev_dependencies:
   flutter_colorpicker: ^0.6.0
   intl: ^0.17.0
   uuid: ^3.0.4
+  smooth_page_indicator: ^1.0.0+2
+  webview_flutter: ^2.0.13
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -69,6 +71,7 @@ flutter:
     - assets/magazine_pics/
     - assets/sample_data/
     - assets/profile_pics/
+    - assets/foodpedia_assets/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
