@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:foodpedia/network/recipe_service.dart';
 import 'package:foodpedia/ui/colors.dart';
 import 'package:foodpedia/ui/recipes/recipe_details.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,7 +24,6 @@ class _RecipeListState extends State<RecipeList> {
 
   late TextEditingController searchTextController;
   final ScrollController _scrollController = ScrollController();
-  List currentSearchList = [];
   int currentCount = 0;
   int currentStartPosition = 0;
   int currentEndPosition = 20;
@@ -31,8 +31,8 @@ class _RecipeListState extends State<RecipeList> {
   bool hasMore = false;
   bool loading = false;
   bool inErrorState = false;
+  List<APIHits> currentSearchList = [];
   List<String> previousSearches = <String>[];
-  APIRecipeQuery? _currentRecipes1 = null;
 
   @override
   void initState() {
@@ -58,11 +58,10 @@ class _RecipeListState extends State<RecipeList> {
     });
   }
 
-  Future loadRecipes() async {
-    final jsonString = await rootBundle.loadString('assets/recipes1.json');
-    setState(() {
-      _currentRecipes1 = APIRecipeQuery.fromJson(jsonDecode(jsonString));
-    });
+  Future<APIRecipeQuery> getRecipeData(String query, int from, int to) async {
+    final recipeJson = await RecipeService().getRecipe(query, from, to);
+    final recipeMap = json.decode(recipeJson);
+    return APIRecipeQuery.fromJson(recipeMap);
   }
 
   @override
@@ -196,11 +195,67 @@ class _RecipeListState extends State<RecipeList> {
   }
 
   Widget _buildRecipeLoader(BuildContext context) {
-    if (_currentRecipes1 == null || _currentRecipes1?.hits == null) {
+    if (searchTextController.text.length < 3) {
       return Container();
     }
-    return Center(
-      child: _buildRecipeCard(context, _currentRecipes1!.hits, 0),
+    return FutureBuilder<APIRecipeQuery>(
+        future: getRecipeData(
+          searchTextController.text.trim(),
+          currentStartPosition,
+          currentEndPosition,
+        ),
+        builder: (context, result) {
+          if (result.connectionState == ConnectionState.done) {
+            if (result.hasError) {
+              return Center(
+                child: Text(
+                  result.error.toString(),
+                  textAlign: TextAlign.center,
+                  textScaleFactor: 1.3,
+                ),
+              );
+            }
+
+            loading = false;
+            final query = result.data;
+            inErrorState = false;
+            if (query != null) {
+              currentCount = query.count;
+              hasMore = query.more;
+              currentSearchList.addAll(query.hits);
+              if (query.to < currentEndPosition) {
+                currentEndPosition = query.to;
+              }
+            }
+            return _buildRecipeList(context, currentSearchList);
+          } else {
+            if (currentCount == 0) {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            } else {
+              return _buildRecipeList(context, currentSearchList);
+            }
+          }
+        });
+  }
+
+  Widget _buildRecipeList(BuildContext recipeLisContext, List<APIHits> hits) {
+    final size = MediaQuery.of(context).size;
+    final itemHeight = 310;
+    final itemWidth = size.width / 2;
+    return Flexible(
+      child: GridView.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: (itemWidth / itemHeight),
+        ),
+        itemBuilder: (BuildContext context, int index) {
+          return _buildRecipeCard(recipeLisContext, hits, index);
+        },
+        itemCount: hits.length,
+        controller: _scrollController,
+      ),
     );
   }
 
@@ -215,7 +270,7 @@ class _RecipeListState extends State<RecipeList> {
           },
         ));
       },
-      child: recipeStringCard(recipe.image, recipe.label),
+      child: recipeCard(recipe),
     );
   }
 }
