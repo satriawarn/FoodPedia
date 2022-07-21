@@ -12,6 +12,10 @@ import '../../network/recipe_model.dart';
 import '../recipe_card.dart';
 import '../widgets/custom_dropdown.dart';
 
+import 'package:chopper/chopper.dart';
+import '../../network/model_response.dart';
+import 'dart:collection';
+
 class RecipeList extends StatefulWidget {
   const RecipeList({Key? key}) : super(key: key);
 
@@ -56,12 +60,6 @@ class _RecipeListState extends State<RecipeList> {
         }
       }
     });
-  }
-
-  Future<APIRecipeQuery> getRecipeData(String query, int from, int to) async {
-    final recipeJson = await RecipeService().getRecipe(query, from, to);
-    final recipeMap = json.decode(recipeJson);
-    return APIRecipeQuery.fromJson(recipeMap);
   }
 
   @override
@@ -198,46 +196,51 @@ class _RecipeListState extends State<RecipeList> {
     if (searchTextController.text.length < 3) {
       return Container();
     }
-    return FutureBuilder<APIRecipeQuery>(
-        future: getRecipeData(
-          searchTextController.text.trim(),
-          currentStartPosition,
-          currentEndPosition,
-        ),
-        builder: (context, result) {
-          if (result.connectionState == ConnectionState.done) {
-            if (result.hasError) {
-              return Center(
-                child: Text(
-                  result.error.toString(),
-                  textAlign: TextAlign.center,
-                  textScaleFactor: 1.3,
-                ),
-              );
-            }
-
-            loading = false;
-            final query = result.data;
-            inErrorState = false;
-            if (query != null) {
-              currentCount = query.count;
-              hasMore = query.more;
-              currentSearchList.addAll(query.hits);
-              if (query.to < currentEndPosition) {
-                currentEndPosition = query.to;
-              }
-            }
-            return _buildRecipeList(context, currentSearchList);
-          } else {
-            if (currentCount == 0) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            } else {
-              return _buildRecipeList(context, currentSearchList);
-            }
+    return FutureBuilder<Response<Result<APIRecipeQuery>>>(
+      future: RecipeService.create().queryRecipes(
+        searchTextController.text.trim(),
+        currentStartPosition,
+        currentEndPosition,
+      ),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                snapshot.error.toString(),
+                textAlign: TextAlign.center,
+                textScaleFactor: 1.3,
+              ),
+            );
           }
-        });
+          loading = false;
+          final result = snapshot.data?.body;
+
+          if (result is Error) {
+            inErrorState = true;
+            return _buildRecipeList(context, currentSearchList);
+          }
+
+          final query = (result as Success).value;
+          inErrorState = false;
+          currentCount = query.count;
+          hasMore = query.more;
+          currentSearchList.addAll(query.hits);
+          if (query.to < currentEndPosition) {
+            currentEndPosition = query.to;
+          }
+          return _buildRecipeList(context, currentSearchList);
+        } else {
+          if (currentCount == 0) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else {
+            return _buildRecipeList(context, currentSearchList);
+          }
+        }
+      },
+    );
   }
 
   Widget _buildRecipeList(BuildContext recipeLisContext, List<APIHits> hits) {
