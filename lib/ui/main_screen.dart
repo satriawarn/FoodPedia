@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:foodpedia/ui/bookmarks/bookmarks.dart';
 import 'package:foodpedia/ui/recipes/recipe_list.dart';
 import 'package:foodpedia/ui/shopping/shopping_list.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,7 +24,7 @@ class _MainScreenState extends State<MainScreen> {
   void initState() {
     super.initState();
     pageList.add(const RecipeList());
-    pageList.add(const MyRecipeList());
+    pageList.add(const Bookmarks());
     pageList.add(const ShoppingList());
     getCurrentIndex();
   }
