@@ -41,6 +41,8 @@ dependencies:
   json_annotation: ^4.6.0
   chopper: ^4.0.6
   logging: ^1.0.2
+  provider: ^6.0.0
+  equatable: ^2.0.3
 
 dev_dependencies:
   flutter_test:
