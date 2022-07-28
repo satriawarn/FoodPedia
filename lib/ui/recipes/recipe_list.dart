@@ -18,7 +18,7 @@ import 'dart:collection';
 
 import '../../data/models/models.dart';
 
-import '../../mock_service/mock_service.dart';
+import '../../network/service_interface.dart';
 import 'package:provider/provider.dart';
 
 class RecipeList extends StatefulWidget {
@@ -202,7 +202,7 @@ class _RecipeListState extends State<RecipeList> {
       return Container();
     }
     return FutureBuilder<Response<Result<APIRecipeQuery>>>(
-      future: Provider.of<MockService>(context).queryRecipes(
+      future: Provider.of<ServiceInterface>(context).queryRecipes(
         searchTextController.text.trim(),
         currentStartPosition,
         currentEndPosition,
