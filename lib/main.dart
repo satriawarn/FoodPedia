@@ -3,6 +3,7 @@ import 'package:foodpedia/ui/main_screen.dart';
 import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 import 'data/memory_repository.dart';
+import 'mock_service/mock_service.dart';
 
 Future<void> main() async {
   _setupLogging();
@@ -22,9 +23,17 @@ class FoodPedia extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<MemoryRepository>(
-      lazy: false,
-      create: (_) => MemoryRepository(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<MemoryRepository>(
+          create: (_) => MemoryRepository(),
+          lazy: false,
+        ),
+        Provider(
+          create: (_) => MockService()..create(),
+          lazy: false,
+        ),
+      ],
       child: MaterialApp(
         title: 'FoodPedia',
         debugShowCheckedModeBanner: false,
