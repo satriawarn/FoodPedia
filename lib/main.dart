@@ -7,11 +7,14 @@ import 'mock_service/mock_service.dart';
 import 'data/repository.dart';
 import 'network/recipe_service.dart';
 import 'network/service_interface.dart';
+import 'data/sqlite/sqlite_repository.dart';
 
 Future<void> main() async {
   _setupLogging();
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const FoodPedia());
+  final repository = SqliteRepository();
+  await repository.init();
+  runApp(FoodPedia(repository: repository));
 }
 
 void _setupLogging() {
@@ -22,7 +25,8 @@ void _setupLogging() {
 }
 
 class FoodPedia extends StatelessWidget {
-  const FoodPedia({Key? key}) : super(key: key);
+  final Repository repository;
+  const FoodPedia({Key? key, required this.repository}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +34,8 @@ class FoodPedia extends StatelessWidget {
       providers: [
         Provider<Repository>(
           lazy: false,
-          create: (_) => MemoryRepository(),
+          create: (_) => repository,
+          dispose: (_, Repository repository) => repository.close(),
         ),
         Provider<ServiceInterface>(
           create: (_) => RecipeService.create(),
